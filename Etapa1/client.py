@@ -17,7 +17,7 @@ if not os.path.exists(file): # verificação
     exit()
 
 # envio do nome do arquivo
-clientSocket.sendto(arquivo.encode(), SERVER_ADDRESS)
+clientSocket.sendto(file.encode(), SERVER_ADDRESS)
 
 # envio dos pacotes (chunks) que compõem o arquivo enviado
 with open(file, 'rb') as f:

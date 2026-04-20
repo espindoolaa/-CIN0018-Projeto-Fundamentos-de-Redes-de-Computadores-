@@ -19,7 +19,8 @@ while True:
     print(f"Recebendo arquivo de nome: {filename}")
 
     # criação do novo nome com o prefixo exigido 
-    new_name = "leilao_" + filename
+    base_name = os.path.basename(filename) # pega apenas o nome do arquivo 
+    new_name = "leilao_" + base_name
     caminho = new_name  
 
     # abre o arquivo para escrita binária
@@ -34,7 +35,7 @@ while True:
     print(f"Arquivo salvo como {new_name}")
 
     # envia de volta ao cliente o novo nome do arquivo 
-    serverSocket.sendto(novo_nome.encode(), client_addr)
+    serverSocket.sendto(new_name.encode(), client_addr)
 
     # abre o arquivo salvo para leitura binária -> "rb"
     with open(caminho, "rb") as f:
