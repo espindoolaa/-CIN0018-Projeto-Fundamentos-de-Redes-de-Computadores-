@@ -2,15 +2,16 @@ import socket
 import os
 
 BUFFER_SIZE = 1024
-SERVER_NAME = "127.0.0.1" # localhost
+SERVER_NAME = "localhost" # 127.0.0.1
 SERVER_PORT = 5005
 
 # criação do socket UDP para o Server -> (AF_INET = IPv4, SOCK_DGRAM = UDP)
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-serverSocket.bind((SERVER_NAME, SERVER_PORT)) # vínculo ao IP e à porta 
+serverSocket.bind((SERVER_NAME, SERVER_PORT)) # vínculo ao endereço
 
 print(f"Servidor UDP escutando na porta {SERVER_PORT}...");
 
+# funcionamento de um servidor teoricamente (quando não falha, etc.) está sempre à disposição, por isso em while true.
 while True:
     # recebe o primeiro pacote do cliente (nome do arquivo) 
     data, client_addr = serverSocket.recvfrom(BUFFER_SIZE)
@@ -32,7 +33,7 @@ while True:
 
             f.write(data) # escrita dos bytes recebidos no arquivo
 
-    print(f"Arquivo salvo como {new_name}")
+    print(f"Arquivo renomeado para: {new_name}")
 
     # envia de volta ao cliente o novo nome do arquivo 
     serverSocket.sendto(new_name.encode(), client_addr)
@@ -50,4 +51,3 @@ while True:
     serverSocket.sendto(b"EOF", client_addr)
 
     print(f"Arquivo {new_name} devolvido ao cliente")
-
