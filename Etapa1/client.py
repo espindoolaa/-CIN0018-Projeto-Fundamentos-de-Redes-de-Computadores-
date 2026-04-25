@@ -9,15 +9,20 @@ SERVER_ADDRESS = (SERVER_NAME, SERVER_PORT)
 # criação do socket UDP para o Client
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # definição em IPv4 e UDP
 
-# arquivo a ser enviado
-file = input("Digite o nome do arquivo para envio:")
+# entrada do usuário com o nome do arquivo 
+file_name = input("Digite o nome do arquivo: ").strip()
 
-if not os.path.exists(file): # verificação se o input encontrou o arquivo
-    print("Arquivo não encontrado no caminho mencionado!")
-    exit()
+# caminho absoluto para leitura
+base_dir = os.path.dirname(os.path.abspath(__file__))  
+file = os.path.join(base_dir, "test_files", file_name) 
+
+# verificação se o input encontrou o arquivo
+if not os.path.exists(file): 
+    print("Arquivo não encontrado no caminho mencionado!") 
+    exit()  
 
 # envio do nome do arquivo
-clientSocket.sendto(file.encode(), SERVER_ADDRESS)
+clientSocket.sendto(file_name.encode(), SERVER_ADDRESS)
 
 # envio dos pacotes (chunks) que compõem o arquivo enviado
 with open(file, 'rb') as f:

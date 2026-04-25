@@ -59,20 +59,24 @@ git clone https://github.com/espindoolaa/-CIN0018-Projeto-Fundamentos-de-Redes-d
 ```text
 2.1 Primeiramente, abra um terminal que será exclusivo para o Server.
 
-2.2 Em seguida rode: python server.py
+2.2 Dentro da pasta do projeto, transicione para a pasta Etapa1 (referente ao desenvolvimento dessa entrega) com o comando: cd Etapa1
 
-2.3 Comportamento esperado: "Servidor UDP escutando na porta 5005..." --> Recebendo arquivo de nome: (Recebe arquivo do cliente) 
+2.3 Em seguida rode no terminal: python server.py
+
+2.4 Comportamento esperado: "Servidor UDP escutando na porta 5005..." --> "Recebendo arquivo de nome: <nome_arquivo>" (quando recebido arquivo do cliente) --> "Arquivo renomeado para: leilao_<nome_arquivo>" --> "Arquivo leilao_<nome_arquivo> devolvido ao cliente"
+
+Observação: Lembrando que <nome_arquivo> pode assumir os valores: imagem.jpg ou mensagem.txt, os quais são os arquivos no contidos na pasta de testes (test_files).
 ```
 
 3. Executando cliente
 ```text
 3.1 Para o cliente será necessário abrir outro terminal, o qual será exclusivo para ele.
 3.2 Dentro da pasta do projeto, transicione para a pasta Etapa1 (referente ao desenvolvimento dessa entrega) com o comando: cd Etapa1
-3.3 Agora, rode: python client.py
-3.4 O terminal do client.py solicitará um input de arquivo, que poderá deverá ser da forma: test_files\<arquivo>
-3.5 Comportamento esperado: "Transmissão do arquivo completa. Aguardando retorno..." --> "Arquivo recebido como: leilao_<arquivo>"
+3.3 Agora, rode no terminal: python client.py
+3.4 O terminal do client.py solicitará um input de arquivo, que poderá deverá ser da forma: <arquivo>
+3.5 Comportamento esperado: "Transmissão do arquivo completa. Aguardando retorno..." --> "Arquivo recebido como: leilao_<arquivo>
 
-Observação: Lembrando que <arquivo> pode assumir o valor: imagem.jpg ou mensagem.txt, os quais são os arquivos no contidos em test_files.
+Observação: Lembrando que <nome_arquivo> pode assumir os valores: imagem.jpg ou mensagem.txt, os quais são os arquivos no contidos na pasta de testes (test_files).
 
 
 

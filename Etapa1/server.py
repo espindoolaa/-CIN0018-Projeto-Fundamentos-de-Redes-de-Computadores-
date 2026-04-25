@@ -20,8 +20,7 @@ while True:
     print(f"Recebendo arquivo de nome: {filename}")
 
     # criação do novo nome com o prefixo exigido 
-    base_name = os.path.basename(filename) # pega apenas o nome do arquivo 
-    new_name = "leilao_" + base_name
+    new_name = "leilao_" + filename
     caminho = new_name  
 
     # abre o arquivo para escrita binária
