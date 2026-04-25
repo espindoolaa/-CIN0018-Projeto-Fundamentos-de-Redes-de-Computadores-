@@ -3,6 +3,7 @@
 
 Esta primeira etapa tem como objetivo implementar a comunicação entre **cliente** e **servidor** por meio do protocolo UDP, utilizando a biblioteca `socket` em Python 
 e fragmentando a transferência em pacotes de até 1024 bytes. Os sistema solicitado pelo professor e monitores exigia que: <br/>
+
 **1.** Ocorresse envio de arquivos de formatos quaisquer (.txt, .jpeg, .mp3, etc.) do cliente para o servidor. <br/>
 **2.** Armazenasse do arquivo enviado pelo cliente no servidor, além de renomear o arquivo para o formato solicitado. <br/>
 **3.** O servidor retornasse o arquivo para o cliente, já com o nome alterado. <br/>
@@ -15,7 +16,8 @@ e fragmentando a transferência em pacotes de até 1024 bytes. Os sistema solici
 * Victória Pessoa Barbosa Matos (vpbm)
 
 ## Funcionamento do sistema implementado
-O sistema construído pela equipe, por sua vez, é composto por dois módulos :
+O sistema construído pela equipe é composto por dois módulos:
+
 * **Cliente**
   - Realiza o envio de arquivo com formato qualquer ao servidor.
   - Aguarda o retorno do arquivo renomeado pelo servidor.
@@ -77,7 +79,7 @@ Observação: Lembrando que <nome_arquivo> pode assumir os valores: imagem.jpg o
 3.5 Comportamento esperado: "Transmissão do arquivo completa. Aguardando retorno..." --> "Arquivo recebido como: leilao_<arquivo>
 
 Observação: Lembrando que <nome_arquivo> pode assumir os valores: imagem.jpg ou mensagem.txt, os quais são os arquivos no contidos na pasta de testes (test_files).
-
+```
 
 
 
