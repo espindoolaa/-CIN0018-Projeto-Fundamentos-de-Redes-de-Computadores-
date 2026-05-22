@@ -40,7 +40,7 @@ Projeto/
     ├── rdt3.py           # Núcleo do protocolo RDT 3.0 e gerador de perdas
     ├── client.py         # Código adaptado para transmissão e recepção confiável
     ├── server.py         # Servidor adaptado operando com controle de stop-and-wait
-    ├── README.md         # Documentação da entrega
+    ├── README.md         
     └── test_files/       # Pasta com os arquivos de testes de diferentes formatos
         ├── imagem.jpg    # Arquivo de imagem para validação binária
         └── mensagem.txt  # Arquivo de texto plano
