@@ -67,15 +67,14 @@ Cliente valida o recebimento e armazena o arquivo modificado com sucesso.
 
 ## Estrutura do projeto
 Projeto/
-│
 ├── Etapa2/
-│   ├── rdt3.py          (núcleo do protocolo RDT 3.0 e gerador de perdas)
-│   ├── client.py        (código adaptado para transmissão e recepção confiável)
-│   ├── server.py        (servidor adaptado operando com controle de stop-and-wait)
+│   ├── rdt3.py          # Núcleo do protocolo RDT 3.0 e gerador de perdas
+│   ├── client.py        # Código adaptado para transmissão e recepção confiável
+│   ├── server.py        # Servidor adaptado operando com controle de stop-and-wait
 │   └── README.md
-│   └── test_files/      (pasta com os arquivos de testes de diferentes formatos)
-│       ├── imagem.jpg   (arquivo de imagem para validação binária)
-│       └── mensagem.txt (arquivo de texto plano)
+└── test_files/          # Pasta com os arquivos de testes de diferentes formatos
+    ├── imagem.jpg       # Arquivo de imagem para validação binária
+    └── mensagem.txt     # Arquivo de texto plano
 
 ## Instruções para execução(semelhantes às da entrega 1)
 1. Clonando o projeto para a sua máquina
