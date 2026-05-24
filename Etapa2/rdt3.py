@@ -4,6 +4,9 @@ import random
 # ambos os servidor e cliente precisam usar as mesmas funções de envio e recebimento
 # confiável. Assim, criamos o rdt3.py para centralizar essa lógica e evitar duplicação de código entre server.py e client.py
 
+# nesse módulo, usamos o buffersize como 2048, pois no server.py e no client.py os pacotes são divididos como 
+# tendo 1024 bytes, porém ainda serão acrescentados os cabeçalhos das outras camadas. Para evitar a perda 
+# de dados, colocamos o tamanho de 2048, como uma margem de segurança
 
 
 # nessa parte, definimos a chance de perda de pacotes para simular um ambiente realista onde o UDP pode perder pacotes
