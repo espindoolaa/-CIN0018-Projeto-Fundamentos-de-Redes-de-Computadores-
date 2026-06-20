@@ -11,8 +11,11 @@ Nesta etapa, o foco principal é a aplicação final do leilão: múltiplos clie
 ## Desenvolvedores do projeto
 
 Lara Luchi (lvl)
+
 Luiz Felipe Vicente da Silva (lfvs2)
+
 Mateus Espíndola Batista (meb)
+
 Victória Pessoa Barbosa Matos (vpbm)
 
 ## Estrutura do projeto
