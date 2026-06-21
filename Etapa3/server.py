@@ -11,24 +11,22 @@ from contacts import HOST, SERVER_PORT, CONTATOS
 BUFFER_SIZE = 1024
 
 
-# Envia uma mensagem confiável para um cliente.
 def enviar(serverSocket, auction, tipo, mensagem, addr):
     ok = rdt3.rdt_send(serverSocket, mensagem, addr, tipo=tipo)
 
     if not ok:
         print(f"Cliente {addr} não respondeu. Removendo da lista de usuários online.")
         auction.remove_address(addr)
+        rdt3.reset_peer(serverSocket, addr)
 
     return ok
 
 
-# Envia uma atualização para todos os clientes online.
 def broadcast(serverSocket, auction, mensagem):
     for addr in auction.get_online_addresses():
         enviar(serverSocket, auction, protocol.UPDATE, mensagem, addr)
 
 
-# Envia o arquivo do item para o vencedor.
 def enviar_arquivo_item(serverSocket, auction, vencedor, addr, item_id, filename):
     if not addr:
         return
@@ -48,21 +46,30 @@ def enviar_arquivo_item(serverSocket, auction, vencedor, addr, item_id, filename
     print(f"Enviando o arquivo {filename} para o vencedor {vencedor}.")
 
     cabecalho = protocol.make_file_header(item_id, filename)
-    enviar(serverSocket, auction, protocol.FILE_BEGIN, cabecalho, addr)
 
-    with open(caminho, "rb") as f:
+    ok = enviar(serverSocket, auction, protocol.FILE_BEGIN, cabecalho, addr)
+
+    if not ok:
+        return
+
+    with open(caminho, "rb") as file:
         while True:
-            chunk = f.read(BUFFER_SIZE)
+            chunk = file.read(BUFFER_SIZE)
 
             if not chunk:
                 break
 
-            rdt3.rdt_send(serverSocket, chunk, addr, tipo=protocol.FILE_DATA)
+            ok = rdt3.rdt_send(serverSocket, chunk, addr, tipo=protocol.FILE_DATA)
+
+            if not ok:
+                print(f"Falha ao enviar parte do arquivo para {addr}.")
+                auction.remove_address(addr)
+                rdt3.reset_peer(serverSocket, addr)
+                return
 
     enviar(serverSocket, auction, protocol.FILE_END, filename, addr)
 
 
-# Verifica periodicamente se algum item expirou.
 def monitorar_tempos(serverSocket, auction):
     while True:
         time.sleep(1)
@@ -93,13 +100,13 @@ def main():
 
     print()
 
-    timer_thread = threading.Thread(
+    thread_monitor = threading.Thread(
         target=monitorar_tempos,
         args=(serverSocket, auction),
         daemon=True
     )
 
-    timer_thread.start()
+    thread_monitor.start()
 
     try:
         while True:
@@ -109,11 +116,16 @@ def main():
                 continue
 
             comando = conteudo.decode("utf-8")
+            comando_limpo = comando.strip().lower()
+
             print(f"{client_addr} -> {comando}")
 
             resposta, broadcasts, arquivos = auction.handle_command(comando, client_addr)
 
             enviar(serverSocket, auction, protocol.RESPONSE, resposta, client_addr)
+
+            if comando_limpo == "logout":
+                rdt3.reset_peer(serverSocket, client_addr)
 
             for mensagem in broadcasts:
                 print(mensagem)

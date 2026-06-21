@@ -4,14 +4,10 @@ import threading
 import queue
 import uuid
 
-# Implementação do RDT 3.0 em camada de aplicação.
-# Usa ACK, número de sequência, timeout e retransmissão.
-
 BUFFER_SIZE = 4096
 TIMEOUT = 1.5
 CHANCE_DE_PERDA = 0.10
-MAX_TENTATIVAS = 30
-
+MAX_TENTATIVAS = 8
 DEBUG_RDT = False
 
 _estados = {}
@@ -22,16 +18,20 @@ class EstadoRDT:
     def __init__(self, sock):
         self.sock = sock
 
-        # Sequência de envio separada por destino.
+        # Sequência usada para enviar para cada destino.
         self.sender_seq = {}
 
-        # Sequência esperada separada por remetente.
+        # Sequência esperada ao receber de cada remetente.
         self.expected_seq = {}
 
-        # ACKs que ainda estão sendo aguardados.
+        # Último pacote aceito de cada remetente.
+        # Isso ajuda a diferenciar retransmissão real de cliente reiniciado na mesma porta.
+        self.last_packet_id = {}
+
+        # ACKs aguardados pelo transmissor.
         self.pending_acks = {}
 
-        # Pacotes válidos entregues para a aplicação.
+        # Fila de pacotes entregues para a aplicação.
         self.inbox = queue.Queue()
 
         self.lock = threading.Lock()
@@ -41,12 +41,10 @@ class EstadoRDT:
         self.thread = None
 
 
-# Simula perda aleatória de pacote.
 def deve_descartar_pacote():
     return random.random() < CHANCE_DE_PERDA
 
 
-# Inicia a thread que fica recebendo pacotes.
 def iniciar_receptor(sock):
     estado = _get_estado(sock)
 
@@ -65,13 +63,30 @@ def iniciar_receptor(sock):
     estado.thread.start()
 
 
-# Para a thread de recebimento.
 def parar_receptor(sock):
     estado = _get_estado(sock)
     estado.rodando = False
 
 
-# Envia uma mensagem usando RDT 3.0.
+def reset_peer(sock, addr):
+    """
+    Limpa o estado RDT associado a um cliente específico.
+    Pode ser usado quando um cliente sai ou para evitar estado antigo preso.
+    """
+    estado = _get_estado(sock)
+
+    with estado.lock:
+        estado.sender_seq.pop(addr, None)
+        estado.expected_seq.pop(addr, None)
+        estado.last_packet_id.pop(addr, None)
+
+        for chave in list(estado.pending_acks.keys()):
+            destino, seq, packet_id = chave
+
+            if destino == addr:
+                estado.pending_acks.pop(chave, None)
+
+
 def rdt_send(sock, payload, destino, tipo="DATA"):
     estado = _get_estado(sock)
 
@@ -121,21 +136,21 @@ def rdt_send(sock, payload, destino, tipo="DATA"):
         return False
 
 
-# Recebe uma mensagem já validada pelo RDT.
 def rdt_recv(sock, timeout=None):
     estado = _get_estado(sock)
     return estado.inbox.get(timeout=timeout)
 
 
-# Loop interno que trata DATA e ACK.
 def _receiver_loop(estado):
     sock = estado.sock
 
     while estado.rodando:
         try:
             pacote, addr = sock.recvfrom(BUFFER_SIZE)
+
         except socket.timeout:
             continue
+
         except OSError:
             break
 
@@ -158,22 +173,43 @@ def _receiver_loop(estado):
             continue
 
         expected_seq = estado.expected_seq.get(addr, 0)
+        ultimo_packet_id = estado.last_packet_id.get(addr)
 
         if seq_recebido == expected_seq:
             _debug(f"[RDT RECEIVER] pacote esperado {tipo} SEQ={seq_recebido}")
 
-            estado.expected_seq[addr] = 1 - expected_seq
-            _send_ack(sock, addr, seq_recebido, packet_id)
+            with estado.lock:
+                estado.expected_seq[addr] = 1 - expected_seq
+                estado.last_packet_id[addr] = packet_id
 
+            _send_ack(sock, addr, seq_recebido, packet_id)
             estado.inbox.put((tipo, conteudo, addr))
 
         else:
-            # Pacote duplicado: confirma de novo, mas não entrega repetido.
-            _debug(f"[RDT RECEIVER] pacote duplicado SEQ={seq_recebido}")
-            _send_ack(sock, addr, seq_recebido, packet_id)
+            if packet_id == ultimo_packet_id:
+                # Retransmissão real do mesmo pacote já entregue.
+                # Reenvia ACK, mas não entrega novamente para a aplicação.
+                _debug(f"[RDT RECEIVER] pacote duplicado SEQ={seq_recebido}")
+                _send_ack(sock, addr, seq_recebido, packet_id)
+
+            else:
+                # Caso especial:
+                # o cliente provavelmente foi fechado e reaberto usando a mesma porta.
+                # O processo novo reiniciou a sequência em 0, mas o servidor ainda tinha estado antigo.
+                # Como o packet_id é novo, aceitamos e ressincronizamos.
+                _debug(
+                    f"[RDT RECEIVER] ressincronizando cliente {addr}. "
+                    f"Recebido SEQ={seq_recebido}, esperado={expected_seq}"
+                )
+
+                with estado.lock:
+                    estado.expected_seq[addr] = 1 - seq_recebido
+                    estado.last_packet_id[addr] = packet_id
+
+                _send_ack(sock, addr, seq_recebido, packet_id)
+                estado.inbox.put((tipo, conteudo, addr))
 
 
-# Envia ACK do pacote recebido.
 def _send_ack(sock, addr, seq, packet_id):
     ack = f"ACK:{seq}:{packet_id}:".encode("utf-8")
 
@@ -184,7 +220,6 @@ def _send_ack(sock, addr, seq, packet_id):
     sock.sendto(ack, addr)
 
 
-# Interpreta o pacote no formato TIPO:SEQ:ID:CONTEUDO.
 def _parse_packet(pacote):
     try:
         idx1 = pacote.index(b":")
@@ -202,7 +237,6 @@ def _parse_packet(pacote):
         return None
 
 
-# Recupera o estado RDT associado ao socket.
 def _get_estado(sock):
     fileno = sock.fileno()
 
@@ -213,7 +247,6 @@ def _get_estado(sock):
         return _estados[fileno]
 
 
-# Imprime mensagens internas apenas quando DEBUG_RDT estiver ligado.
 def _debug(msg):
     if DEBUG_RDT:
         print(msg)
