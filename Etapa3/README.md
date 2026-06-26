@@ -242,6 +242,8 @@ Arquivo recebido e salvo em text_files/recebidos/recebido_carro.txt
 
 ## Instruções para execução
 
+> **Observação:** o comando usado para executar os scripts Python pode variar de acordo com o sistema operacional e com a instalação do Python de cada ambiente. Por exemplo, no macOS pode ser necessário usar `python3.10 client.py`, enquanto no Linux geralmente basta `python3 client.py`. No Windows, o comando costuma ser `python client.py`. Ajuste os comandos abaixo conforme a configuração do seu ambiente.
+
 ### 1. Clonar o projeto
 
 ```bash
